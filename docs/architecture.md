@@ -45,3 +45,5 @@ Independent tester power
 ## Communications
 
 The Arduino Nano ESP32 creates a Wi-Fi access point and hosts a local browser interface. A future mode may allow connection to an existing Wi-Fi network.
+
+The local web interface is developed first as a self-contained static mock with simulated data. The same HTML, CSS, and JavaScript assets will later be served by the Arduino Nano ESP32; the mock sample generator will then be replaced by Arduino HTTP configuration endpoints and a Server-Sent Events or WebSocket live-data stream.
