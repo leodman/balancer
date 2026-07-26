@@ -42,3 +42,7 @@ A rotating propeller can fail violently. Development and testing require a polyc
 ## Project status
 
 Initial architecture and documentation stage.
+
+## Web interface mock
+
+The first offline, simulated OpenPropLab instrument interface is available in [`web/`](web/README.md). Open [`web/index.html`](web/index.html) directly in a browser to explore the dashboard, balancing workflow, test setup, results export, and settings without connected hardware.
