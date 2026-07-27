@@ -3,29 +3,10 @@
 #include <WiFiNINA.h>
 
 #include "secrets.h"
+#include "web_assets.h"
 
 namespace {
 WiFiServer server(80);
-
-const char testPage[] = R"HTML(<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>OpenPropLab firmware test</title>
-  <style>
-    body { font: 1.1rem system-ui, sans-serif; margin: 3rem auto; max-width: 42rem; padding: 0 1rem; }
-    h1 { color: #1261a0; }
-    .status { background: #e8f5e9; border-left: .4rem solid #2e7d32; padding: 1rem; }
-  </style>
-</head>
-<body>
-  <h1>OpenPropLab</h1>
-  <p class="status">Arduino Nano 33 IoT web server is running.</p>
-  <p>This is the first OpenPropLab firmware prototype.</p>
-</body>
-</html>
-)HTML";
 
 void connectToWifi() {
   if (WiFi.status() == WL_NO_MODULE) {
@@ -54,17 +35,37 @@ void connectToWifi() {
   Serial.println("/ in a browser.");
 }
 
-void sendResponse(WiFiClient &client, bool found) {
-  if (found) {
-    client.println("HTTP/1.1 200 OK");
-    client.println("Content-Type: text/html; charset=utf-8");
-  } else {
-    client.println("HTTP/1.1 404 Not Found");
-    client.println("Content-Type: text/plain; charset=utf-8");
+void writeAsset(WiFiClient &client, const uint8_t *data, size_t length) {
+  constexpr size_t chunkSize = 512;
+  for (size_t offset = 0; offset < length; offset += chunkSize) {
+    const size_t remaining = length - offset;
+    const size_t count = remaining < chunkSize ? remaining : chunkSize;
+    client.write(data + offset, count);
   }
+}
+
+void sendResponse(WiFiClient &client, const char *contentType,
+                  const uint8_t *content, size_t contentLength) {
+  client.println("HTTP/1.1 200 OK");
+  client.print("Content-Type: ");
+  client.println(contentType);
+  client.print("Content-Length: ");
+  client.println(contentLength);
+  client.println("Cache-Control: no-cache");
   client.println("Connection: close");
   client.println();
-  client.print(found ? testPage : "Not found\n");
+  writeAsset(client, content, contentLength);
+}
+
+void sendNotFound(WiFiClient &client) {
+  static const uint8_t notFound[] = "Not found\n";
+  client.println("HTTP/1.1 404 Not Found");
+  client.println("Content-Type: text/plain; charset=utf-8");
+  client.print("Content-Length: ");
+  client.println(sizeof(notFound) - 1);
+  client.println("Connection: close");
+  client.println();
+  client.write(notFound, sizeof(notFound) - 1);
 }
 
 void handleClient() {
@@ -75,7 +76,6 @@ void handleClient() {
 
   client.setTimeout(1000);
   const String requestLine = client.readStringUntil('\n');
-  const bool rootRequested = requestLine.startsWith("GET / ");
 
   // Consume the rest of the HTTP headers before writing the response.
   while (client.connected()) {
@@ -85,7 +85,19 @@ void handleClient() {
     }
   }
 
-  sendResponse(client, rootRequested);
+  if (requestLine.startsWith("GET / ") ||
+      requestLine.startsWith("GET /index.html ")) {
+    sendResponse(client, "text/html; charset=utf-8", index_html,
+                 index_html_len);
+  } else if (requestLine.startsWith("GET /styles.css ")) {
+    sendResponse(client, "text/css; charset=utf-8", styles_css,
+                 styles_css_len);
+  } else if (requestLine.startsWith("GET /app.js ")) {
+    sendResponse(client, "application/javascript; charset=utf-8", app_js,
+                 app_js_len);
+  } else {
+    sendNotFound(client);
+  }
   delay(1);
   client.stop();
 }

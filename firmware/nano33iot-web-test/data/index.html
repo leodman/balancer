@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Offline simulated OpenPropLab engineering interface">
+  <title>OpenPropLab · Instrument Console</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="masthead">
+    <div><p class="eyebrow">PROPELLER TEST INSTRUMENT</p><h1>OpenPropLab</h1><p class="subtitle">Open-source propeller balancing and motor characterization platform</p></div>
+    <div class="device-summary" aria-label="Device connection summary">
+      <span class="connected"><i></i> OpenPropLab connected</span><span class="pill">Mock mode</span>
+      <span>Arduino Nano 33 IoT</span><code>Local web interface</code><span>Firmware preview 0.1</span>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Primary navigation" role="tablist">
+    <button type="button" role="tab" aria-selected="true" aria-controls="dashboard" id="tab-dashboard" data-section="dashboard">Dashboard</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="balance" id="tab-balance" data-section="balance" tabindex="-1">Balance Wizard</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="setup" id="tab-setup" data-section="setup" tabindex="-1">Test Setup</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="results" id="tab-results" data-section="results" tabindex="-1">Results</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="settings" id="tab-settings" data-section="settings" tabindex="-1">Settings</button>
+  </nav>
+
+  <main>
+    <div class="control-bar" aria-label="Simulation controls">
+      <div><strong>Test status</strong> <span id="motor-status" class="status-chip stopped">Stopped · disarmed</span></div>
+      <div class="button-row"><button id="start" class="positive" type="button">Start Simulation</button><button id="stop" type="button" disabled>Stop Simulation</button><button id="zero" type="button">Zero Sensors</button><button id="estop" class="danger" type="button">Emergency Stop</button></div>
+    </div>
+    <div id="notice" class="notice" aria-live="assertive" hidden></div>
+    <p id="announcer" class="sr-only" aria-live="polite"></p>
+
+    <section id="dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+      <div class="section-heading"><div><p class="eyebrow">LIVE ACQUISITION</p><h2>Dashboard</h2></div><span class="sample-rate">SIM · 2 Hz</span></div>
+      <div class="metrics" aria-label="Live measurements">
+        <article class="metric blue"><span>RPM</span><strong id="rpm">0</strong><small>rev/min</small></article>
+        <article class="metric green"><span>Thrust</span><strong id="thrust">0.00</strong><small>N</small></article>
+        <article class="metric purple"><span>Torque</span><strong id="torque">0.000</strong><small>N·m</small></article>
+        <article class="metric amber"><span>Vibration at 1× RPM</span><strong id="vibration">0.00</strong><small>m/s²</small></article>
+        <article class="metric blue"><span>Drive input voltage</span><strong id="voltage">16.80</strong><small>V</small></article>
+        <article class="metric green"><span>Drive input current</span><strong id="current">0.0</strong><small>A</small></article>
+        <article class="metric red"><span>Electrical input power</span><strong id="electrical">0</strong><small>W · measured drive path</small></article>
+        <article class="metric purple"><span>Mechanical shaft power</span><strong id="shaft">0</strong><small>W · calculated</small></article>
+      </div>
+      <div class="dashboard-grid">
+        <article class="panel trace-panel">
+          <div class="panel-head"><div><p class="eyebrow">ROLLING HISTORY · 25 S</p><h3>Live test trace</h3></div><div class="legend"><span class="rpm-key">RPM</span><span class="vib-key">Vibration</span></div></div>
+          <svg id="trace" viewBox="0 0 800 300" role="img" aria-labelledby="trace-title trace-desc" preserveAspectRatio="none">
+            <title id="trace-title">Live RPM and vibration trace</title><desc id="trace-desc">Waiting for the simulation to start.</desc>
+            <g class="grid"><line x1="50" y1="30" x2="780" y2="30"/><line x1="50" y1="105" x2="780" y2="105"/><line x1="50" y1="180" x2="780" y2="180"/><line x1="50" y1="255" x2="780" y2="255"/><line x1="50" y1="30" x2="50" y2="255"/><line x1="415" y1="30" x2="415" y2="255"/><line x1="780" y1="30" x2="780" y2="255"/></g>
+            <g class="axis"><text x="8" y="36">10k</text><text x="16" y="260">0</text><text x="50" y="282">−25 s</text><text x="752" y="282">now</text></g>
+            <text id="waiting" class="waiting" x="415" y="150" text-anchor="middle">Waiting for simulation</text><polyline id="rpm-line" class="rpm-line" points=""/><polyline id="vib-line" class="vib-line" points=""/>
+          </svg>
+          <p id="chart-summary" class="sr-only">No samples recorded.</p>
+        </article>
+        <div class="side-stack">
+          <article class="panel"><p class="eyebrow">SYSTEM HEALTH</p><h3>Sensor status</h3><ul class="status-list">
+            <li><span>Optical Sensor A <small>blade passage</small></span><b class="ready">Ready</b></li><li><span>Optical Sensor B <small>hub reference</small></span><b class="optional">Optional</b></li><li><span>ADXL345 accelerometer</span><b>Simulated</b></li><li><span>Thrust load cell</span><b>Simulated</b></li><li><span>Torque load cell</span><b>Simulated</b></li><li><span>Voltage sensor</span><b>Simulated</b></li><li><span>Current sensor</span><b>Simulated</b></li><li><span>Temperature sensors</span><b>Simulated</b></li><li><span>microSD logging</span><b class="off">Not connected</b></li>
+          </ul></article>
+          <article class="panel efficiency"><div class="panel-head"><div><p class="eyebrow">CALCULATED</p><h3>Drive efficiency</h3></div><strong id="efficiency">0.0%</strong></div><progress id="efficiency-bar" max="100" value="0">0%</progress>
+            <dl class="temperatures"><div><dt>Motor temperature</dt><dd id="motor-temp">22.0 °C</dd></div><div><dt>ESC temperature</dt><dd id="esc-temp">22.0 °C</dd></div><div><dt>Battery temperature</dt><dd id="battery-temp">22.0 °C</dd></div></dl>
+          </article>
+        </div>
+      </div>
+      <article class="power-note"><strong>Drive measurement boundary</strong><span>Battery or DC supply → voltage and current measurement → ESC or motor controller → motor → propeller</span><small>Tester electronics and the Arduino are independently powered and excluded from drive-power measurement.</small></article>
+    </section>
+
+    <section id="balance" role="tabpanel" aria-labelledby="tab-balance" hidden>
+      <div class="section-heading"><div><p class="eyebrow">GUIDED PROCEDURE</p><h2>Balance Wizard</h2><p>Supports 1–12 blades and corrections at any angular position around the rotor.</p></div></div>
+      <ol class="steps"><li>Baseline measurement</li><li>Add known trial mass</li><li>Trial measurement</li><li>Calculate correction</li><li>Apply correction</li><li>Verification run</li></ol>
+      <div class="two-col"><form id="balance-form" class="panel form-grid">
+        <label>Number of blades <input id="blade-count" type="number" min="1" max="12" value="2" required></label>
+        <label>Rotation direction <select id="rotation"><option>Clockwise</option><option>Counterclockwise</option></select></label>
+        <label>Balancing RPM <input id="balance-rpm" type="number" min="100" max="30000" value="3500" required></label>
+        <label>Correction radius (mm) <input id="correction-radius" type="number" min="1" value="60" required></label>
+        <label>Trial mass (g) <input id="trial-mass" type="number" min="0.01" step="0.01" value="0.20" required></label>
+        <label>Trial mass angle (°) <input id="trial-angle" type="number" min="0" max="359" value="45" required></label>
+        <label>Trial mass radius (mm) <input id="trial-radius" type="number" min="1" value="60" required></label>
+        <button class="positive wide" type="submit">Generate Mock Recommendation</button>
+      </form><article id="recommendation" class="panel recommendation" aria-live="polite"><p class="eyebrow">DEMONSTRATION DATA</p><h3>Correction recommendation</h3><div class="empty-result">Complete the mock inputs, then generate a recommendation.</div></article></div>
+    </section>
+
+    <section id="setup" role="tabpanel" aria-labelledby="tab-setup" hidden>
+      <div class="section-heading"><div><p class="eyebrow">TEST DEFINITION</p><h2>Test Setup</h2></div><span class="status-chip stopped">Motor control disabled</span></div>
+      <aside class="safety-note"><strong>Measurement-only firmware</strong><p>The first firmware version is measurement-only.<br>Automatic ESC control will be implemented only after hardware safety interlocks are validated.</p></aside>
+      <form class="panel form-grid setup-form">
+        <label>Motor name <input type="text" value="Bench Motor 01"></label><label>Motor KV <input type="number" value="920"></label><label>Propeller diameter (in) <input type="number" step="0.1" value="10"></label><label>Propeller pitch (in) <input type="number" step="0.1" value="4.5"></label><label>Number of blades <input type="number" min="1" max="12" value="2"></label><label>ESC or motor controller <input type="text" value="60 A ESC"></label><label>Battery cell count <input type="number" min="1" value="4"></label><label>Power source type <select><option>Battery</option><option>DC bench power supply</option></select></label><label>Current sensor range <select><option>50 A</option><option selected>100 A</option><option>200 A</option></select></label>
+        <fieldset><legend>Safety limits</legend><label>Maximum RPM <input type="number" value="10000"></label><label>Maximum current (A) <input type="number" value="45"></label><label>Maximum vibration (m/s²) <input type="number" value="8"></label><label>Maximum motor temperature (°C) <input type="number" value="80"></label><label>Maximum ESC temperature (°C) <input type="number" value="75"></label><label>Maximum battery temperature (°C) <input type="number" value="55"></label></fieldset>
+        <fieldset><legend>Automated sweep · configuration only</legend><label>Start RPM <input type="number" value="2000"></label><label>End RPM <input type="number" value="8000"></label><label>RPM step <input type="number" value="500"></label><label>Stabilization time (s) <input type="number" value="5"></label><label>Measurement time (s) <input type="number" value="10"></label><button type="button" disabled>Motor control unavailable</button></fieldset>
+      </form>
+    </section>
+
+    <section id="results" role="tabpanel" aria-labelledby="tab-results" hidden>
+      <div class="section-heading"><div><p class="eyebrow">SESSION BUFFER</p><h2>Results</h2><p>Latest 20 simulated samples. Exports include the complete in-memory session.</p></div><div class="button-row"><button id="csv" type="button">Export CSV</button><button id="json" type="button">Export JSON</button></div></div>
+      <div class="table-wrap panel"><table><caption class="sr-only">Simulated test results</caption><thead><tr><th>Time</th><th>RPM</th><th>Thrust</th><th>Torque</th><th>Voltage</th><th>Current</th><th>Electrical power</th><th>Shaft power</th><th>Efficiency</th><th>Vibration</th></tr></thead><tbody id="results-body"><tr><td colspan="10" class="empty-cell">Start the simulation to collect samples.</td></tr></tbody></table></div>
+    </section>
+
+    <section id="settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+      <div class="section-heading"><div><p class="eyebrow">LOCAL CONFIGURATION</p><h2>Settings</h2><p>Mock settings reset when this page reloads.</p></div></div>
+      <div class="two-col"><form class="panel form-grid settings-form"><label>Device name <input type="text" value="OpenPropLab"></label><label>Wi-Fi mode <select><option>Standalone access point</option><option>Join local network</option></select></label><label>Unit system <select><option>SI</option><option>RC customary units</option></select></label><label>Appearance <select id="appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label><label class="check"><input type="checkbox" checked> Blade sensor enabled</label><label class="check"><input type="checkbox" checked> Hub sensor enabled</label><label class="check"><input type="checkbox"> microSD logging enabled</label></form>
+      <article class="panel"><p class="eyebrow">CALIBRATION REGISTER</p><h3>Calibration status</h3><ul class="status-list calibration"><li><span>Accelerometer</span><b class="ready">Mock calibrated</b></li><li><span>Thrust load cell</span><b class="ready">Mock calibrated</b></li><li><span>Torque load cell</span><b class="ready">Mock calibrated</b></li><li><span>Voltage sensor</span><b class="optional">Pending hardware</b></li><li><span>Current sensor</span><b class="optional">Pending hardware</b></li></ul></article></div>
+    </section>
+  </main>
+  <footer><strong>SIMULATION ONLY</strong> No Arduino, sensors, or motor controls are connected. Hardware emergency-stop circuitry is mandatory on the real test stand.</footer>
+</body>
+</html>
