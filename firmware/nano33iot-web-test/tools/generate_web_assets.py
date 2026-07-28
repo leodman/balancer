@@ -4,7 +4,12 @@
 from pathlib import Path
 import shutil
 
-PROJECT = Path(__file__).resolve().parents[1]
+try:
+    Import("env")
+    PROJECT = Path(env.subst("$PROJECT_DIR"))
+except NameError:
+    # Keep direct `python tools/generate_web_assets.py` execution working.
+    PROJECT = Path(__file__).resolve().parents[1]
 SOURCE = PROJECT.parents[1] / "web"
 DATA = PROJECT / "data"
 OUTPUT = PROJECT / "src" / "web_assets.h"
