@@ -1,7 +1,7 @@
 # OpenPropLab Nano 33 IoT web test
 
 This PlatformIO project is a temporary OpenPropLab proof of concept, not the final target firmware. It connects
-an Arduino Nano 33 IoT to Wi-Fi with WiFiNINA and serves a small test page over
+an Arduino Nano 33 IoT to Wi-Fi with WiFiNINA and serves the complete approved simulation over
 HTTP. It validates PlatformIO, upload, Wi-Fi connectivity, local HTTP serving,
 and the mock-interface approach while Arduino Nano ESP32 Phase 1 work remains pending.
 
@@ -51,4 +51,14 @@ command.
 - `platformio.ini` selects the Arduino Nano 33 IoT, Arduino framework, and
   WiFiNINA dependency.
 - `src/main.cpp` connects to Wi-Fi and handles HTTP requests on port 80.
+- `data/` is an automatically synchronized copy of the design source in `../../web/`.
+- `tools/generate_web_assets.py` copies the approved files and generates
+  `src/web_assets.h`. PlatformIO runs it before each build. To regenerate manually,
+  run `python3 tools/generate_web_assets.py` from this directory.
+- Generated assets are separate `PROGMEM` byte arrays and are sent in 512-byte
+  chunks rather than copied into whole-file `String` objects in RAM.
 - `include/secrets.example.h` is the safe-to-commit credentials template.
+
+The routes are `/`, `/index.html`, `/styles.css`, `/app.js`, and `/api/status`.
+Unknown routes return 404. No credentials are exposed. There are deliberately no
+motor-command API routes; all page controls remain browser-only simulation.
