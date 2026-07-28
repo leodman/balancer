@@ -57,6 +57,20 @@ void sendResponse(WiFiClient &client, const char *contentType,
   writeAsset(client, content, contentLength);
 }
 
+void sendStatus(WiFiClient &client) {
+  char body[320];
+  IPAddress ip = WiFi.localIP();
+  const int length = snprintf(
+      body, sizeof(body),
+      "{\"board\":\"Arduino Nano 33 IoT\",\"role\":\"temporary test board\","
+      "\"target\":\"Arduino Nano ESP32\",\"firmwareStatus\":\"running\","
+      "\"wifiStatus\":\"connected\",\"ipAddress\":\"%u.%u.%u.%u\","
+      "\"simulation\":true,\"motorControlAvailable\":false}\n",
+      ip[0], ip[1], ip[2], ip[3]);
+  sendResponse(client, "application/json; charset=utf-8",
+               reinterpret_cast<const uint8_t *>(body), length);
+}
+
 void sendNotFound(WiFiClient &client) {
   static const uint8_t notFound[] = "Not found\n";
   client.println("HTTP/1.1 404 Not Found");
@@ -64,6 +78,7 @@ void sendNotFound(WiFiClient &client) {
   client.print("Content-Length: ");
   client.println(sizeof(notFound) - 1);
   client.println("Connection: close");
+  client.println("Cache-Control: no-cache");
   client.println();
   client.write(notFound, sizeof(notFound) - 1);
 }
@@ -87,16 +102,26 @@ void handleClient() {
 
   if (requestLine.startsWith("GET / ") ||
       requestLine.startsWith("GET /index.html ")) {
-    sendResponse(client, "text/html; charset=utf-8", index_html,
-                 index_html_len);
-  } else if (requestLine.startsWith("GET /styles.css ")) {
-    sendResponse(client, "text/css; charset=utf-8", styles_css,
-                 styles_css_len);
-  } else if (requestLine.startsWith("GET /app.js ")) {
-    sendResponse(client, "application/javascript; charset=utf-8", app_js,
-                 app_js_len);
+    sendResponse(client, web_assets[0].contentType, web_assets[0].data,
+                 web_assets[0].length);
+  } else if (requestLine.startsWith("GET /api/status ")) {
+    sendStatus(client);
   } else {
-    sendNotFound(client);
+    bool served = false;
+    for (size_t index = 1; index < web_asset_count; ++index) {
+      String requestPrefix = "GET ";
+      requestPrefix += web_assets[index].path;
+      requestPrefix += ' ';
+      if (requestLine.startsWith(requestPrefix)) {
+        sendResponse(client, web_assets[index].contentType,
+                     web_assets[index].data, web_assets[index].length);
+        served = true;
+        break;
+      }
+    }
+    if (!served) {
+      sendNotFound(client);
+    }
   }
   delay(1);
   client.stop();
