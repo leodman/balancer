@@ -18,11 +18,12 @@ Planning prices are approximate U.S. retail values before tax and shipping.
 | Wiring and prototype materials | Board, headers, cable, resistors | 1 lot | $28 | $28 |
 | Power connectors and heavy wire | XT60 or selected standard | 1 lot | $15 | $15 |
 | Emergency-stop hardware | Switch and appropriately rated disconnect | 1 set | $25 | $25 |
+| Setup/Wi-Fi-reset button and connection-status LED | Provisional ordinary momentary button, single LED, and support components | 1 set | TBD | TBD |
 | Aluminum frame materials | Extrusion, plate, and brackets | 1 lot | $80 | $80 |
 | Polycarbonate containment | Propeller guard | 1 lot | $40 | $40 |
 | Fasteners and enclosure | Hardware and electronics box | 1 lot | $30 | $30 |
 
-**Estimated complete prototype total: approximately $350.**
+**Estimated complete prototype total: approximately $350, plus the provisional setup-button/LED parts once selected.**
 
 The motor, ESC, battery or DC motor supply, test propellers, tools, tax, and shipping are excluded.
 

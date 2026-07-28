@@ -27,6 +27,7 @@ The project will:
 - Calculate mechanical shaft power and combined ESC/motor efficiency.
 - Monitor motor, ESC, and battery temperatures.
 - Host a responsive local web interface over Wi-Fi.
+- Provide optional, explicitly selected external or internal ESC-command modes while retaining external measurement-only operation.
 - Operate without cloud services or an external internet connection.
 - Use common modules available through ordinary electronics retailers.
 - Remain open source and reproducible by other builders.
@@ -75,14 +76,14 @@ The reference build should use an Arduino Nano ESP32, ADXL345, ordinary optical 
 
 Motor control is intentionally deferred.
 
-The first validated versions will be measurement-only. Automatic ESC control, RPM regulation, and automated sweeps will be added only after hardware interlocks, current limits, vibration shutdown, temperature shutdown, watchdog behavior, and emergency stopping have been validated.
+The first validated versions will be measurement-only with external control. Internal standard servo-style PWM is then validated without a propeller. Live manual PWM and programmed PWM sequences precede automatic closed-loop RPM control and automated sweeps. Powered automatic operation is added only after RPM and vibration sensing, hardware interlocks, shutdown logic, watchdog behavior, and emergency stopping have been validated.
 
 ## 4. Initial system architecture
 
 ```text
 OpenPropLab
 ├── Arduino Nano ESP32
-│   ├── Wi-Fi access point
+│   ├── Connectivity and provisioning
 │   ├── Local HTTP server
 │   ├── Configuration
 │   ├── Acquisition timing
@@ -103,9 +104,17 @@ OpenPropLab
 │   └── Drive electrical input
 ├── DS18B20 probes
 │   └── Motor / ESC / battery temperature
+├── Motor Control (optional)
+│   ├── External command mode
+│   ├── Internal standard ESC PWM output
+│   ├── Live manual PWM / programmed PWM sequence
+│   ├── Later automatic closed-loop RPM control
+│   └── Arm/disarm, limits, and shutdown behavior
 ├── microSD or flash logging
 └── Local browser interface
 ```
+
+Connectivity and provisioning includes normal Wi-Fi station mode, a first-start Wi-Fi setup access point, a local provisioning webpage, nonvolatile credential storage, setup/Wi-Fi-reset button, retry/fallback behavior, an ordinary connection-status LED, and the local server. Motor-control modes and safety requirements are detailed in [architecture.md](architecture.md) and [safety.md](safety.md).
 
 ## 5. Measurement model
 
@@ -167,22 +176,30 @@ Exit criteria:
 - Browser mock runs offline.
 - Scope and design principles are documented.
 
-### Phase 1 — Arduino-hosted web preview
+### Phase 1 — Arduino-hosted web preview *(in progress)*
 
-Deliverables:
+Completed:
 
-- Arduino Nano ESP32 PlatformIO project
-- LittleFS-hosted webpage
-- Standalone Wi-Fi access point
-- Local HTTP server
-- Static `/api/status` endpoint
-- Exact upload instructions
+- Basic Arduino-hosted webpage proof of concept on the temporary Arduino Nano 33 IoT
+- Validation of PlatformIO, firmware upload, Wi-Fi connectivity, local HTTP serving, and the mock-interface approach
+
+Pending deliverables:
+
+- Arduino Nano ESP32 target implementation and final Phase 1 validation
+- Full OpenPropLab mock interface served by the device
+- First-start Wi-Fi setup access point and local provisioning webpage
+- Nonvolatile credential storage
+- Setup/Wi-Fi-reset-button behavior
+- Simple connection-status LED
+- Local `/api/status` endpoint
+- Connection retry and fallback behavior
 
 Exit criteria:
 
-- A phone or computer connects directly to the Arduino.
-- `http://192.168.4.1` loads the same mock interface.
-- No sensor hardware is required.
+- On missing credentials, a phone or computer can use the provisioning webpage to configure the target Arduino Nano ESP32.
+- The target connects in Wi-Fi station mode and serves the complete mock interface and status endpoint locally.
+- Setup-button and connection-status-LED behavior is validated, with motor control forced disarmed in setup mode.
+- No sensor hardware or compiled-in credentials are required for normal-user operation.
 
 ### Phase 2 — Optical RPM and phase sensing
 
@@ -287,22 +304,31 @@ Exit criteria:
 
 ### Phase 8 — Controlled motor operation
 
-Deliverables:
+Motor-control development is split into gated milestones:
 
-- ESC output
-- Arm/disarm state machine
-- Physical emergency stop input
-- Hardware motor-power isolation
-- Current, RPM, vibration, and temperature shutdowns
-- Watchdog and communication-loss behavior
-- Closed-loop RPM control
-- Automated sweeps
+1. Preserve and validate external measurement-only operation.
+2. Generate internal standard servo-style PWM on the bench without a propeller.
+3. Add live manual PWM with explicit mode selection and arm/disarm behavior.
+4. Add open-loop programmed PWM sequences with command, hold, and optional ramp times.
+5. Add automatic closed-loop RPM control only after required sensing and safety validation.
+6. Add automated test sweeps and data acquisition after closed-loop stabilization is proven.
+
+Cross-cutting deliverables:
+
+- Extensible motor command provider and explicit active-mode display
+- Configurable PWM minimum, maximum, neutral, and ESC arming behavior
+- Physical emergency stop and independent motor-power disconnect
+- Evaluation of physical source selection, electrical isolation, or a hardware interlock
+- Current, RPM, vibration, sensor-validity, and motor/ESC/battery-temperature shutdowns
+- Watchdog, communication-loss, latched-fault, deliberate-reset, and power-interruption behavior
 
 Exit criteria:
 
 - Hardware emergency stop operates independently of firmware.
-- All shutdown paths are tested.
-- Automated motor operation is disabled by default.
+- All shutdown paths are tested after RPM and vibration sensing are validated.
+- Internal command is disabled by default, starts at minimum PWM, and never automatically starts or resumes.
+- Wi-Fi setup mode is confirmed to force a disarmed state.
+- External control remains available.
 
 ## 7. Suggested work order
 
@@ -423,7 +449,6 @@ Completed:
 - Browser-based interactive mock webpage
 - Mock webpage validated in Google Colab
 - Initial wiring visual and bill of materials
+- Temporary Arduino Nano 33 IoT basic HTTP proof of concept
 
-Next milestone:
-
-> Host the existing mock webpage directly from the Arduino Nano ESP32 over its own Wi-Fi network.
+Phase 1 remains in progress. Next work targets the Arduino Nano ESP32: serve the complete mock interface, implement first-start access-point provisioning and nonvolatile credentials, add setup/Wi-Fi-reset-button and connection-status-LED behavior, and provide the local status endpoint. The temporary Nano 33 IoT is not the final target.
