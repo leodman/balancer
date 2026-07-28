@@ -1,8 +1,9 @@
 # OpenPropLab Nano 33 IoT web test
 
-This PlatformIO project is the first OpenPropLab firmware prototype. It connects
+This PlatformIO project is a temporary OpenPropLab proof of concept, not the final target firmware. It connects
 an Arduino Nano 33 IoT to Wi-Fi with WiFiNINA and serves a small test page over
-HTTP.
+HTTP. It validates PlatformIO, upload, Wi-Fi connectivity, local HTTP serving,
+and the mock-interface approach while Arduino Nano ESP32 Phase 1 work remains pending.
 
 ## Requirements
 
@@ -13,6 +14,8 @@ HTTP.
   or the PlatformIO IDE extension for Visual Studio Code
 
 ## Configure Wi-Fi
+
+This temporary development firmware compiles credentials from `secrets.h` only as a development convenience. The intended Arduino Nano ESP32 workflow uses a Wi-Fi setup access point, local provisioning webpage, and nonvolatile credential storage; normal users will not edit `secrets.h`.
 
 From this directory, copy the credentials template:
 

@@ -30,4 +30,4 @@ In a later firmware integration, the Arduino Nano ESP32 will serve these same st
 - Values are synthetic and are not suitable for engineering decisions.
 - Settings and samples are reset on reload.
 - The Balance Wizard demonstrates workflow and output formatting, not balancing mathematics.
-- Motor control is intentionally unavailable.
+- Motor control is intentionally unavailable. Future controls shown or added to the interface will be command surfaces, not safety devices; webpage accessibility alone must never enable internal ESC command.
