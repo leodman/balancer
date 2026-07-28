@@ -4,7 +4,7 @@ This folder contains visual references used to guide the design and implementati
 
 Suggested files include:
 
-- `openproplab-web-mockup.png` — reference image for the local web interface
+- `openproplab_web_mockup.png` — reference image for the local web interface
 - Wiring and layout reference images
 - Mechanical arrangement sketches
 

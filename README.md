@@ -17,13 +17,14 @@ The project is designed around common off-the-shelf modules that can be purchase
 
 ## Core design
 
-- Arduino Nano ESP32
+- Arduino Nano ESP32 as the intended production and development target
 - Local Wi-Fi webpage hosted by the device
 - ADXL345 vibration sensor mounted on the stationary motor carriage
 - Stationary optical sensors behind the propeller
 - Two load cells for thrust and reaction torque
 - Independent tester power and motor power
 - Commodity Amazon-style modules; no custom PCB required for the first version
+- Optional ESC command subsystem with external control, live manual PWM, programmed PWM sequences, and later automatic closed-loop RPM control
 
 ## Safety
 
@@ -41,7 +42,9 @@ A rotating propeller can fail violently. Development and testing require a polyc
 
 ## Project status
 
-Initial architecture and documentation stage.
+Phase 1 is in progress. A basic Arduino-hosted webpage proof of concept has validated PlatformIO, firmware upload, Wi-Fi connectivity, local HTTP serving, and the mock-webpage approach on an Arduino Nano 33 IoT used only as a temporary test board. Target validation on the Arduino Nano ESP32, the complete mock interface, first-start Wi-Fi provisioning, credential storage, setup/Wi-Fi-reset-button behavior, a connection-status LED, and a local status endpoint remain pending.
+
+The production design will use a Wi-Fi setup access point and local provisioning webpage rather than requiring normal users to compile credentials into firmware. Measurement-only operation and safety validation precede internal ESC command and automatic motor operation.
 
 ## Web interface mock
 

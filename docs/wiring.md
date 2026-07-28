@@ -1,6 +1,6 @@
 # Wiring
 
-The initial proposed pin assignment is documented in the wiring diagram under `hardware/diagrams/`.
+The initial proposed pin assignment is documented in the wiring diagram under `hardware/diagrams/`. That drawing predates the provisioning and expanded motor-control architecture and requires revision; see [the drawing revision report](drawing-revision-report.md). Existing drawings are retained until replacements are supplied.
 
 ## Example Arduino Nano ESP32 assignments
 
@@ -20,6 +20,8 @@ The initial proposed pin assignment is documented in the wiring diagram under `h
 | SPI MISO | SPI | D13 |
 | microSD chip select | SPI | D14 |
 | ESC signal | PWM, optional | D15 |
+| Setup/Wi-Fi-reset button | Digital input, provisional | TBD |
+| Connection-status LED | Digital output, provisional | TBD |
 | Current sensor | Analog | A0 |
 | Voltage sensor | Analog | A1 |
 
@@ -32,5 +34,8 @@ The initial proposed pin assignment is documented in the wiring diagram under `h
 - Grounds connect at one controlled point when required by the selected non-isolated sensor modules.
 - Motor current must never flow through Arduino ground wiring.
 - All ESP32 analog inputs must remain within the permitted ADC voltage range.
+- The emergency stop and independent motor-power disconnect must not depend on the browser interface, Wi-Fi, or the ESC-signal pin.
+- Physical External/Internal selection, electrical isolation, or a hardware interlock will be evaluated during hardware design; the active source must be unambiguous.
+- Entering Wi-Fi setup access-point mode must leave internal motor command disabled and disarmed.
 
-The pin assignment is provisional and may change after breadboard testing.
+The pin assignment is provisional and may change after breadboard testing. Exact setup-button hold times, LED timing, ESC output circuitry, control-source selection, and interlock wiring are intentionally not finalized.
